@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TSx Admin Panel</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#050505;
+color:white;
+padding:20px;
+min-height:100vh;
+}
+
+/* BACKGROUND */
+
+.bg{
+position:fixed;
+inset:0;
+background:
+radial-gradient(circle at top,#440000 0%,#050505 70%);
+z-index:-2;
+}
+
+/* TITLE */
+
+.title{
+text-align:center;
+font-size:3rem;
+margin-bottom:30px;
+color:#ff003c;
+text-shadow:
+0 0 10px red,
+0 0 20px red,
+0 0 40px red;
+}
+
+/* PANEL */
+
+#adminPanel{
+width:100%;
+max-width:500px;
+margin:auto;
+background:#111;
+padding:25px;
+border-radius:20px;
+box-shadow:
+0 0 25px rgba(255,0,0,0.3);
+}
+
+/* INPUTS */
+
+#adminPanel input,
+#adminPanel textarea,
+#adminPanel select{
+width:100%;
+padding:15px;
+margin-bottom:15px;
+border:none;
+border-radius:12px;
+background:#1a1a1a;
+color:white;
+font-size:15px;
+outline:none;
+}
+
+#adminPanel textarea{
+resize:none;
+height:100px;
+}
+
+/* BUTTON */
+
+#adminPanel button{
+width:100%;
+padding:15px;
+border:none;
+border-radius:12px;
+background:#ff003c;
+color:white;
+font-size:16px;
+cursor:pointer;
+transition:0.3s;
+}
+
+#adminPanel button:hover{
+transform:scale(1.02);
+box-shadow:0 0 20px red;
+}
+
+/* PLAYER LIST */
+
+#playerList{
+max-width:500px;
+margin:30px auto;
+}
+
+.player{
+background:#111;
+padding:15px;
+border-radius:20px;
+margin-bottom:20px;
+box-shadow:
+0 0 20px rgba(255,0,0,0.2);
+}
+
+.player img{
+width:100%;
+height:220px;
+object-fit:cover;
+border-radius:15px;
+margin-bottom:10px;
+}
+
+.player h2{
+margin-bottom:8px;
+}
+
+.player p{
+color:#ff4d6d;
+margin-bottom:10px;
+}
+
+.delete-btn{
+width:100%;
+padding:12px;
+border:none;
+border-radius:12px;
+background:red;
+color:white;
+cursor:pointer;
+font-size:15px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="bg"></div>
+
+<h1 class="title">
+TSx Admin Panel
+</h1>
+
+<!-- PANEL -->
+
+<div id="adminPanel">
+
+<input
+type="text"
+id="pname"
+placeholder="Player Name"
+>
+
+<input
+type="text"
+id="prole"
+placeholder="Player Role"
+>
+
+<input
+type="text"
+id="pweapon"
+placeholder="Main Weapon"
+>
+
+<input
+type="text"
+id="pcountry"
+placeholder="Country"
+>
+
+<input
+type="text"
+id="pstyle"
+placeholder="Play Style"
+>
+
+<textarea
+id="pabout"
+placeholder="About Player"
+></textarea>
+
+<input
+type="text"
+id="pimage"
+placeholder="Player Image URL"
+>
+
+<select id="pgroup">
+
+<option>TSx1</option>
+
+<option>TSx2</option>
+
+<option>TSx Jr</option>
+
+</select>
+
+<button onclick="addPlayer()">
+Add Player
+</button>
+
+</div>
+
+<!-- PLAYER LIST -->
+
+<div id="playerList"></div>
+
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
+import {
+
+getFirestore,
+collection,
+addDoc,
+getDocs,
+deleteDoc,
+doc
+
+}
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+/* FIREBASE */
+
+const firebaseConfig = {
+
+apiKey:
+"AIzaSyD3AjZaXTrSJrgtlDjs0UYulCwkCntDIyc",
+
+authDomain:
+"midnight-5bfbc.firebaseapp.com",
+
+projectId:
+"midnight-5bfbc",
+
+storageBucket:
+"midnight-5bfbc.firebasestorage.app",
+
+messagingSenderId:
+"427694651642",
+
+appId:
+"1:427694651642:web:tsxweb"
+
+};
+
+const app =
+initializeApp(firebaseConfig);
+
+const db =
+getFirestore(app);
+
+const playerCollection =
+collection(db,"players");
+
+/* ADD PLAYER */
+
+window.addPlayer =
+async function(){
+
+const player = {
+
+name:
+document.getElementById("pname").value,
+
+role:
+document.getElementById("prole").value,
+
+weapon:
+document.getElementById("pweapon").value,
+
+country:
+document.getElementById("pcountry").value,
+
+style:
+document.getElementById("pstyle").value,
+
+about:
+document.getElementById("pabout").value,
+
+image:
+document.getElementById("pimage").value,
+
+group:
+document.getElementById("pgroup").value
+
+};
+
+await addDoc(
+playerCollection,
+player
+);
+
+alert("Player Added");
+
+clearForm();
+
+loadPlayers();
+
+};
+
+/* LOAD PLAYERS */
+
+async function loadPlayers(){
+
+const querySnapshot =
+await getDocs(playerCollection);
+
+const container =
+document.getElementById("playerList");
+
+container.innerHTML = "";
+
+querySnapshot.forEach((docItem)=>{
+
+const player =
+docItem.data();
+
+const div =
+document.createElement("div");
+
+div.className = "player";
+
+div.innerHTML = `
+
+<img src="${player.image}">
+
+<h2>${player.name}</h2>
+
+<p>${player.role}</p>
+
+<button
+class="delete-btn"
+onclick="deletePlayer('${docItem.id}')"
+>
+
+Delete Player
+
+</button>
+
+`;
+
+container.appendChild(div);
+
+});
+
+}
+
+/* DELETE */
+
+window.deletePlayer =
+async function(id){
+
+await deleteDoc(
+doc(db,"players",id)
+);
+
+loadPlayers();
+
+};
+
+/* CLEAR FORM */
+
+function clearForm(){
+
+document.getElementById("pname").value = "";
+
+document.getElementById("prole").value = "";
+
+document.getElementById("pweapon").value = "";
+
+document.getElementById("pcountry").value = "";
+
+document.getElementById("pstyle").value = "";
+
+document.getElementById("pabout").value = "";
+
+document.getElementById("pimage").value = "";
+
+}
+
+/* START */
+
+loadPlayers();
+
+</script>
+
+</body>
+</html>
